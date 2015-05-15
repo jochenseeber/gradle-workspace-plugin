@@ -1,0 +1,80 @@
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        if(!project.hasProperty("bootstrap")) {
+            classpath group: "me.seeber.gradle", name: "gradle-bintray-config", version: "1.0.0"
+            classpath group: "me.seeber.gradle", name: "gradle-github-config", version: "1.0.0"
+            classpath group: "me.seeber.gradle", name: "gradle-plugin-publish-config", version: "1.0.0"
+            classpath group: "me.seeber.gradle", name: "gradle-license-config", version: "1.0.0"
+        }
+    }
+}
+
+version = "1.0.0"
+group = "me.seeber.gradle"
+description = "Manage multi-project workspaces"
+
+if(project.hasProperty("bootstrap")) {
+    apply plugin: "java"
+    apply plugin: "maven"
+}
+else {
+    apply plugin: "me.seeber.distribution.bintray"
+    apply plugin: "me.seeber.distribution.maven"
+    apply plugin: "me.seeber.ide.eclipse"
+    apply plugin: "me.seeber.distribution.gradle-plugin"
+    apply plugin: "me.seeber.project.gradle-plugin"
+    apply plugin: "me.seeber.repository.github"
+    apply plugin: "me.seeber.setup.license"
+    apply plugin: "me.seeber.validation.checkstyle"
+
+    model {
+        projectConfig {
+            organization.name = "Jochen Seeber"
+            inceptionYear = 2016
+            license.id = "BSD 2-Clause"
+        }
+
+        githubConfig { user = "jochenseeber" }
+    }
+
+    pluginBundle {
+        tags = ["workspace", "multiproject"]
+
+        plugins { workspacePlugin.id = "me.seeber.workspace" }
+    }
+}
+
+dependencies {
+    compile(group: "com.google.guava", name: "guava", version: "19.0")
+
+    if(project.hasProperty("bootstrap")) {
+        compile(gradleApi())
+        compile(localGroovy())
+
+        compileOnly(group: "org.eclipse.jdt", name: "org.eclipse.jdt.annotation", version: "2.0.0")
+
+        testCompile(gradleTestKit())
+        testCompile(group:"org.spockframework", name: "spock-core", version: "1.0-groovy-2.4") { exclude module: "groovy-all" }
+    }
+    else {
+        annotations(group: "me.seeber.annotations", name: "jdk-annotations", version: "1.8.0-r.1")
+        annotations(group: "me.seeber.annotations", name: "gradle-api-annotations", version: "3.1-r.1")
+    }
+}
+
+if(project.hasProperty("bootstrap")) {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url = "https://plugins.gradle.org/m2" }
+        jcenter()
+    }
+}
