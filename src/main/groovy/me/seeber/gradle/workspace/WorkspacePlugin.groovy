@@ -27,16 +27,22 @@ package me.seeber.gradle.workspace
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyArtifact
+import org.gradle.api.artifacts.DependencyResolutionListener
+import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.PublishArtifact
+import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 public class WorkspacePlugin implements Plugin<Project> {
 
     protected static class ArtifactInfo {
+
+        String group
 
         String name
 
@@ -48,61 +54,84 @@ public class WorkspacePlugin implements Plugin<Project> {
 
         Configuration configuration
 
-        public String getKey() {
-            "${name}:${type}:${classifier}"
+        String getKey() {
+            "${group}:${name}:${type}:${classifier}".toString()
+        }
+
+        String toString() {
+            key
         }
     }
 
     private Logger logger = Logging.getLogger(WorkspacePlugin)
 
-    public void apply(Project targetProject) {
-        targetProject.configure(targetProject) {
-            gradle.projectsEvaluated { resolveLocalProjects(targetProject.rootProject) }
-        }
+    void apply(Project targetProject) {
+        logger.info "Applying workspace plugin to ${targetProject}"
+
+        targetProject.gradle.projectsEvaluated { resolveLocalProjects(targetProject)  }
+
+        logger.debug "Applied workspace plugin to ${targetProject}"
     }
 
     protected void resolveLocalProjects(Project rootProject) {
+        logger.debug "Resolving local projects for ${rootProject}"
+
         Map<String, ArtifactInfo> knownArtifacts = [:]
 
         rootProject.allprojects.each { Project project ->
             project.configurations.each { Configuration configuration ->
                 configuration.artifacts.each { PublishArtifact artifact ->
-                    ArtifactInfo info = new ArtifactInfo(name: artifact.name, type: artifact.type, classifier: artifact.classifier, project: project, configuration: configuration)
-                    knownArtifacts.put(info.key, info)
+                    if(artifact.classifier || configuration.name == 'runtime') {
+                        ArtifactInfo info = new ArtifactInfo(group: project.group, name: artifact.name, type: artifact.type, classifier: artifact.classifier, project: project, configuration: configuration)
+                        knownArtifacts.put(info.key, info)
+                        logger.debug "Found artifact ${info} in ${project} ${configuration}"
+                    }
                 }
             }
         }
 
+        logger.debug "Replacing dependencies for ${rootProject}"
+
         rootProject.allprojects.each { Project project ->
             project.configurations.each { Configuration configuration ->
-                configuration.dependencies.withType(ExternalModuleDependency).collect().each { ExternalModuleDependency dependency ->
-                    String type = "jar"
-                    String classifier = ""
-                    DependencyArtifact artifact = dependency.artifacts[0]
+                replaceDependencies(project, configuration, knownArtifacts)
+            }
+        }
 
-                    if(artifact != null) {
-                        type = artifact.type
-                        classifier = artifact.classifier
-                    }
+        logger.debug "Done replacing dependencies for ${rootProject}"
+    }
 
-                    String key = "${dependency.name}:${type}:${classifier}"
-                    ArtifactInfo knownArtifact = knownArtifacts[key]
+    protected void replaceDependencies(Project project, Configuration configuration, Map<String, ArtifactInfo> knownArtifacts) {
+        Set<ExternalModuleDependency> dependencies = new HashSet(configuration.dependencies.withType(ExternalModuleDependency))
 
-                    if(knownArtifact != null) {
-                        logger.info "Replacing dependency to ${dependency} with ${knownArtifact.project}:${knownArtifact.configuration}"
+        dependencies.each { ExternalModuleDependency dependency ->
+            logger.debug "Inspecting dependency ${dependency}"
 
-                        Map<String, Object> properties = [
-                            path: knownArtifact.project.path,
-                            configuration: knownArtifact.configuration.name
-                        ]
+            ArtifactInfo knownArtifact = null
 
-                        ProjectDependency projectDependency = project.dependencies.project(properties)
-                        dependency.artifacts = projectDependency.artifacts.clone
-
-                        configuration.dependencies.remove(dependency)
-                        configuration.dependencies.add(projectDependency)
-                    }
+            if(dependency.artifacts.empty) {
+                String key = "${dependency.group}:${dependency.name}:jar:".toString()
+                knownArtifact = knownArtifacts[key]
+            }
+            else {
+                dependency.artifacts.find { DependencyArtifact artifact ->
+                    String key = "${dependency.group}:${artifact.name}:${artifact.type}:${artifact.classifier}".toString()
+                    knownArtifact = knownArtifacts[key]
+                    knownArtifact != null
                 }
+            }
+
+            if(knownArtifact != null) {
+                logger.info "Replacing dependency to ${dependency} with ${knownArtifact.project} ${knownArtifact.configuration}"
+
+                Map<String, Object> properties = [
+                    path: knownArtifact.project.path,
+                    configuration: knownArtifact.configuration.name
+                ]
+
+                ProjectDependency projectDependency = project.dependencies.project(properties)
+                configuration.dependencies.remove(dependency)
+                configuration.dependencies.add(projectDependency)
             }
         }
     }
