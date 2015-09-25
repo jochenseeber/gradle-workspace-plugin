@@ -11,7 +11,7 @@ Applying the plugin
 ### Gradle 2.1 and higher
 
     plugins {
-        id 'me.seeber.github.gradle-workspace-plugin' version '0.1.0'
+        id 'me.seeber.github.gradle-workspace-plugin' version '0.2.0'
     }
 
 ### Gradle 1.x and 2.0
@@ -21,7 +21,7 @@ Applying the plugin
             jcenter()
         }
         dependencies {
-            classpath 'me.seeber.github.gradle-workspace-plugin:0.1.0'
+            classpath 'me.seeber.github.gradle-workspace-plugin:0.2.0'
         }
     }
 
@@ -57,7 +57,7 @@ Now to work on both together, just create a new settings file named e.g. "settin
 Also create a new build file named "build.gradle" with the following content:
 
     plugins {
-        id "me.seeber.workspace" version "0.1.0"
+        id "me.seeber.workspace" version "0.2.0"
     }
 
 Now you can work seamlessly on both projects at once, and any binary dependencies will be replaced by a dependencies on the included project. No need to do a "gradle install" to have one project pick up changes in the other project, and "gradle eclipse" will give you nice Eclipse workspace with direct project dependencies.
