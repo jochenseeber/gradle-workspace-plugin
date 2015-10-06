@@ -4,9 +4,9 @@ buildscript {
     }
 
     dependencies {
-    	classpath 'com.gradle.publish:plugin-publish-plugin:0.9.1'
-		classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.3.0'
-		classpath group: 'nl.javadude.gradle.plugins', name: 'license-gradle-plugin', version: '0.11.0'
+        classpath group: 'com.gradle.publish', name: 'plugin-publish-plugin', version: '0.9.1'
+        classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.3.0'
+        classpath group: 'nl.javadude.gradle.plugins', name: 'license-gradle-plugin', version: '0.11.0'
     }
 }
 
@@ -16,6 +16,7 @@ apply plugin: 'groovy'
 apply plugin: 'license'
 apply plugin: 'maven'
 apply plugin: 'pl.allegro.tech.build.axion-release'
+apply plugin: 'maven-publish'
 
 scmVersion {
     tag {
@@ -55,6 +56,14 @@ pluginBundle {
 
 license {
 	header = file('LICENSE.txt')
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 eclipse {
