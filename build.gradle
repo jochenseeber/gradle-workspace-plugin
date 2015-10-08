@@ -67,10 +67,6 @@ publishing {
 }
 
 eclipse {
-    project {
-    	name = "${name}-${version}"
-    }
-
     classpath {
         downloadSources = true
         downloadJavadoc = true
