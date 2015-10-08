@@ -27,14 +27,10 @@ package me.seeber.gradle.workspace
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.DependencyArtifact
-import org.gradle.api.artifacts.DependencyResolutionListener
-import org.gradle.api.artifacts.DependencySet
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.artifacts.PublishArtifact
-import org.gradle.api.artifacts.ResolvableDependencies
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
@@ -49,6 +45,8 @@ public class WorkspacePlugin implements Plugin<Project> {
         String type
 
         String classifier
+
+        String version
 
         Project project
 
@@ -82,7 +80,14 @@ public class WorkspacePlugin implements Plugin<Project> {
             project.configurations.each { Configuration configuration ->
                 configuration.artifacts.each { PublishArtifact artifact ->
                     if(artifact.classifier || configuration.name == 'runtime') {
-                        ArtifactInfo info = new ArtifactInfo(group: project.group, name: artifact.name, type: artifact.type, classifier: artifact.classifier, project: project, configuration: configuration)
+                        ArtifactInfo info = new ArtifactInfo(
+                                group: project.group,
+                                name: artifact.name,
+                                type: artifact.type,
+                                classifier: artifact.classifier,
+                                version: project.version,
+                                project: project,
+                                configuration: configuration)
                         knownArtifacts.put(info.key, info)
                         logger.debug "Found artifact ${info} in ${project} ${configuration}"
                     }
@@ -123,6 +128,10 @@ public class WorkspacePlugin implements Plugin<Project> {
 
             if(knownArtifact != null) {
                 logger.info "Replacing dependency to ${dependency} with ${knownArtifact.project} ${knownArtifact.configuration}"
+
+                if(knownArtifact.version != dependency.version) {
+                    logger.error("Version '${knownArtifact.version}' of local project '${knownArtifact.project.name}' does not match version '${dependency.version}' specified in build file")
+                }
 
                 Map<String, Object> properties = [
                     path: knownArtifact.project.path,
