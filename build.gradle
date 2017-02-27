@@ -9,15 +9,15 @@ buildscript {
 
     dependencies {
         if(!project.hasProperty("bootstrap")) {
-            classpath group: "me.seeber.gradle", name: "gradle-bintray-config", version: "1.0.0"
-            classpath group: "me.seeber.gradle", name: "gradle-github-config", version: "1.0.0"
-            classpath group: "me.seeber.gradle", name: "gradle-plugin-publish-config", version: "1.0.0"
-            classpath group: "me.seeber.gradle", name: "gradle-license-config", version: "1.0.0"
+            classpath group: "me.seeber.gradle", name: "gradle-bintray-config", version: "1.1.0"
+            classpath group: "me.seeber.gradle", name: "gradle-github-config", version: "1.1.0"
+            classpath group: "me.seeber.gradle", name: "gradle-plugin-publish-config", version: "1.1.0"
+            classpath group: "me.seeber.gradle", name: "gradle-license-config", version: "1.1.0"
         }
     }
 }
 
-version = "1.0.0"
+version = "1.1.0"
 group = "me.seeber.gradle"
 description = "Manage multi-project workspaces"
 
@@ -53,7 +53,7 @@ else {
 }
 
 dependencies {
-    compile(group: "com.google.guava", name: "guava", version: "19.0")
+    compile(group: "com.google.guava", name: "guava", version: "21.0")
 
     if(project.hasProperty("bootstrap")) {
         compile(gradleApi())
@@ -65,8 +65,8 @@ dependencies {
         testCompile(group:"org.spockframework", name: "spock-core", version: "1.0-groovy-2.4") { exclude module: "groovy-all" }
     }
     else {
-        annotations(group: "me.seeber.annotations", name: "jdk-annotations", version: "1.8.0-r.1")
-        annotations(group: "me.seeber.annotations", name: "gradle-api-annotations", version: "3.1-r.1")
+        annotations(group: "me.seeber.annotations", name: "jdk-annotations", version: "1.8.0-r.2")
+        annotations(group: "me.seeber.annotations", name: "gradle-api-annotations", version: "3.1-r.2")
     }
 }
 

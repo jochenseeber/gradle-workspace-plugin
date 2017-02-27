@@ -70,6 +70,9 @@ public class WorkspacePlugin implements Plugin<Project> {
      */
     protected static final Joiner ARTIFACT_JOINER = Objects.requireNonNull(Joiner.on(":").skipNulls());
 
+    /**
+     * Comparator used to sort configuration infos
+     */
     public static final Comparator<ExportingConfiguration> CONFIGURATION_INFO_COMPARATOR = Comparator
             .<ExportingConfiguration, String> comparing(i -> i.getProject().getPath())
             .thenComparing(i -> i.getConfiguration().getName());
@@ -166,7 +169,7 @@ public class WorkspacePlugin implements Plugin<Project> {
          * @see java.lang.Object#toString()
          */
         @Override
-        public String toString() {
+        public @Nullable String toString() {
             return getConfiguration().toString();
         }
     }
