@@ -72,6 +72,8 @@ public class WorkspacePluginTest extends BaseSpecification {
         Project one = project.childProjects["one"]
         Project two = project.childProjects["two"]
 
+        def c = two.configurations["compile"]
+
         ResolvedConfiguration configuration = two.configurations["compile"].resolvedConfiguration
         ResolvedDependency dependency = configuration.firstLevelModuleDependencies.first()
         ResolvedArtifact artifact = dependency.moduleArtifacts.first()
