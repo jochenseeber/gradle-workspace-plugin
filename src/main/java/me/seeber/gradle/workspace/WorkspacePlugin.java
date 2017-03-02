@@ -25,6 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package me.seeber.gradle.workspace;
 
 import java.util.ArrayList;
@@ -43,8 +44,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.ProjectEvaluationListener;
-import org.gradle.api.ProjectState;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencyArtifact;
@@ -199,25 +198,14 @@ public class WorkspacePlugin implements Plugin<Project> {
     public void apply(Project project) {
         this.project = project;
 
+        getLogger().info("Applying workspace plugin to {}", project);
+
         WorkspaceConfig workspaceConfig = new WorkspaceConfig();
         project.getExtensions().add("workspaceConfig", workspaceConfig);
 
-        getLogger().info("Applying workspace plugin to {}", project);
-
-        project.getGradle().addProjectEvaluationListener(new ProjectEvaluationListener() {
-            @Override
-            public void beforeEvaluate(@Nullable Project project) {
-            }
-
-            @Override
-            public void afterEvaluate(@Nullable Project project, @Nullable ProjectState state) {
-                if (project != null) {
-                    replaceDependencies(project);
-                }
-            }
+        project.getGradle().projectsEvaluated(g -> {
+            replaceDependencies(getProject());
         });
-
-        getLogger().debug("Applied workspace plugin to {}", project);
     }
 
     /**
@@ -227,7 +215,7 @@ public class WorkspacePlugin implements Plugin<Project> {
      */
     protected void replaceDependencies(Project project) {
         project.getConfigurations().all(c -> {
-            Multimap<String, ExportingConfiguration> exports = getExportingConfigurations(
+            Multimap<@NonNull String, @NonNull ExportingConfiguration> exports = getExportingConfigurations(
                     project.getRootProject().getAllprojects());
 
             replaceDependencies(project, c, exports);
