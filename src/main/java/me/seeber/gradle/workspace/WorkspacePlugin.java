@@ -269,6 +269,13 @@ public class WorkspacePlugin implements Plugin<Project> {
 
                     getLogger().debug("Replacing dependency {} with {}", dependency, projectDependency);
 
+                    if (!dependency.getVersion().equals(projectDependency.getVersion())) {
+                        getLogger().error(
+                                "Version '{}' of local project '{}' does not match version '{}' specified in build file '{}'",
+                                projectDependency.getVersion(), projectDependency.getName(), dependency.getVersion(),
+                                project.getRootProject().relativePath(project.getBuildFile()));
+                    }
+
                     removeDependencies.add(moduleDependency);
                     addDependencies.add(projectDependency);
                 }
