@@ -25,6 +25,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package me.seeber.gradle.workspace;
 
 import java.util.Set;
@@ -38,17 +39,17 @@ public class WorkspaceConfig {
 
     /**
      * Configurations that are exported to workspace builds
-     * 
+     *
      * The workspace plugin only replaces dependencies to projects from the build if the required artifacts are created
      * by an exported configurationof the target project.
-     * 
+     *
      * Defaults to "runtime" and "testRuntime".
      */
     private Set<String> exportedConfigurations = ImmutableSet.of("runtime", "testRuntime");
 
     /**
      * Get the exported configurations
-     * 
+     *
      * @return Exported configurations
      */
     public Set<String> getExportedConfigurations() {
@@ -57,7 +58,7 @@ public class WorkspaceConfig {
 
     /**
      * Set the exported configurations
-     * 
+     *
      * @param configurations Exported configurations
      */
     public void setExportedConfigurations(Set<String> configurations) {

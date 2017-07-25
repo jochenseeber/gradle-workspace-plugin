@@ -42,6 +42,7 @@ import javax.inject.Inject;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -63,6 +64,11 @@ import com.google.common.collect.Multimaps;
  * Plugin to manage multi-project workspaces
  */
 public class WorkspacePlugin implements Plugin<Project> {
+
+    /**
+     * Property to set when errors should be ignored
+     */
+    protected static final String IGNORE_ERRORS_PROPERTIES = "workspace.ignoreErrors";
 
     /**
      * Joiner used to concatenate artifact parts
@@ -184,6 +190,11 @@ public class WorkspacePlugin implements Plugin<Project> {
     private final Logger logger;
 
     /**
+     * Should the build be aborted?
+     */
+    private boolean abortBuild;
+
+    /**
      * Create a new workspace plugin
      */
     @Inject
@@ -205,6 +216,12 @@ public class WorkspacePlugin implements Plugin<Project> {
 
         project.getGradle().projectsEvaluated(g -> {
             replaceDependencies(getProject());
+
+            if (this.abortBuild && !project.hasProperty(IGNORE_ERRORS_PROPERTIES)) {
+                throw new GradleException(String.format(
+                        "Aborting build because of workspace configuration errors (use -P%s to ignore these errors)",
+                        IGNORE_ERRORS_PROPERTIES));
+            }
         });
     }
 
@@ -274,6 +291,7 @@ public class WorkspacePlugin implements Plugin<Project> {
                                 "Version '{}' of local project '{}' does not match version '{}' specified in build file '{}'",
                                 projectDependency.getVersion(), projectDependency.getName(), dependency.getVersion(),
                                 project.getRootProject().relativePath(project.getBuildFile()));
+                        this.abortBuild = true;
                     }
 
                     removeDependencies.add(moduleDependency);
