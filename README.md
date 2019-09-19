@@ -16,7 +16,7 @@ Applying the plugin
 
 ```gradle
 plugins {
-    id "me.seeber.workspace" version "1.1.1"
+    id "me.seeber.workspace" version "1.1.2"
 }
 ```
 
@@ -57,7 +57,7 @@ Also create a new build file named `build.gradle` with the following content:
 
 ```gradle
 plugins {
-    id "me.seeber.workspace" version "1.1.1"
+    id "me.seeber.workspace" version "1.1.2"
 }
 ```
 
